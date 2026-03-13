@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String
+  firstName     String
+  lastName      String
+  birthDate     DateTime?
+  nationality   String?
+  phone         String?
+  defaultLocale String?  @map("default_locale")
+  gender        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tournaments   Tournament[] @relation("OwnerTournaments")
+}
+
+model Tournament {
+  id           String       @id @default(cuid())
+  name         String
+  format       String
+  maxScore     Int
+  status       String       @default("draft")
+  startsAt     DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  ownerId      String
+  owner        User         @relation("OwnerTournaments", fields: [ownerId], references: [id])
+
+  participants Participant[]
+  courts       Court[]
+  matches      Match[]
+}
+
+model Participant {
+  id           String      @id @default(cuid())
+  displayName  String
+  createdAt    DateTime    @default(now())
+
+  tournamentId String
+  tournament   Tournament  @relation(fields: [tournamentId], references: [id])
+}
+
+model Court {
+  id           String      @id @default(cuid())
+  name         String
+
+  tournamentId String
+  tournament   Tournament  @relation(fields: [tournamentId], references: [id])
+
+  matches      Match[]
+}
+
+model Match {
+  id           String      @id @default(cuid())
+  round        Int
+
+  courtId      String
+  court        Court       @relation(fields: [courtId], references: [id])
+
+  tournamentId String
+  tournament   Tournament  @relation(fields: [tournamentId], references: [id])
+
+  pairA        String
+  pairB        String
+
+  scoreA       Int         @default(0)
+  scoreB       Int         @default(0)
+}
