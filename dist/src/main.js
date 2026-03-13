@@ -3,12 +3,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("dotenv/config");
 const core_1 = require("@nestjs/core");
 const app_module_1 = require("./app.module");
+function getCorsOrigins() {
+    const raw = process.env.CORS_ORIGIN;
+    if (!raw)
+        return ['http://localhost:3000'];
+    return raw.split(',').map((s) => s.trim()).filter(Boolean);
+}
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.enableCors({
-        origin: 'http://localhost:3000',
+        origin: getCorsOrigins(),
+        credentials: true,
     });
-    await app.listen(process.env.PORT ?? 4000);
+    const port = process.env.PORT ?? 4000;
+    await app.listen(port);
 }
 bootstrap();
 //# sourceMappingURL=main.js.map
